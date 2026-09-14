@@ -32,7 +32,6 @@ pipeline {
 
         stage('Installation des dépendances') {
             steps {
-                runCmd 'python3 -m pip install --upgrade pip'
                 runCmd 'pip install -r requirements-dev.txt'
             }
         }
