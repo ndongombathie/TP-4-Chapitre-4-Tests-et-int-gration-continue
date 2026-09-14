@@ -12,9 +12,22 @@ time.perf_counter() et vérifiez qu'il reste sous un seuil généreux
 
 Comparez avec solution/rendezvous/tests_performance.py une fois terminé.
 """
+import time
+
 from django.test import TestCase
+
+SEUIL_REPONSE_SECONDES = 1.0
 
 
 class PerformanceFormulaireTest(TestCase):
     def test_formulaire_repond_rapidement(self):
-        self.skipTest("TODO (TP4) : à implémenter, voir la consigne ci-dessus")
+        debut = time.perf_counter()
+        response = self.client.get("/rendezvous/")
+        duree = time.perf_counter() - debut
+
+        self.assertEqual(response.status_code, 200)
+        self.assertLess(
+            duree,
+            SEUIL_REPONSE_SECONDES,
+            f"GET /rendezvous/ a pris {duree:.3f}s, seuil dépassé ({SEUIL_REPONSE_SECONDES}s)",
+        )

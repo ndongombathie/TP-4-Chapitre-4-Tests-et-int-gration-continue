@@ -17,12 +17,54 @@ TODO (TP4) : écrivez un test qui, dans une seule méthode :
 
 Comparez avec solution/rendezvous/tests_systeme.py une fois terminé.
 """
+from datetime import date
+
 from django.test import TestCase
 
-# TODO (TP4) : importez Patient (patients.models) une fois que vous en
-# avez besoin dans le test ci-dessous.
+from patients.models import Patient
+from rendezvous.models import RendezVous
 
 
 class ParcoursCompletRendezVousTest(TestCase):
     def test_parcours_complet_de_la_prise_de_rendez_vous_a_la_facture(self):
-        self.skipTest("TODO (TP4) : à implémenter, voir la consigne ci-dessus")
+        # 1. Créer un patient
+        patient = Patient.objects.create(
+            nom="Diallo",
+            prenom="Aminata",
+            email="aminata@example.com",
+            est_vip=False,
+        )
+
+        # 2. Afficher le formulaire et vérifier que le patient y apparaît
+        response = self.client.get("/rendezvous/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, patient.prenom)
+        self.assertContains(response, patient.nom)
+
+        # 3. Soumettre une prise de rendez-vous
+        date_rdv = date(2026, 9, 14)  # lundi → pas de majoration weekend
+        response = self.client.post(
+            "/rendezvous/",
+            {
+                "patient": patient.pk,
+                "type_consultation": "GENERALISTE",
+                "date": date_rdv.isoformat(),
+                "notes": "Consultation de contrôle",
+            },
+        )
+        self.assertEqual(response.status_code, 302)  # redirection après POST
+
+        self.assertTrue(
+            RendezVous.objects.filter(patient=patient).exists(),
+            "Le rendez-vous devrait avoir été créé en base",
+        )
+
+        # 4. Consulter la facture et vérifier le total
+        response = self.client.get(f"/rendezvous/facture/{patient.pk}/")
+        self.assertEqual(response.status_code, 200)
+
+        rendez_vous = RendezVous.objects.get(patient=patient)
+        self.assertEqual(rendez_vous.prix, 5000)  # tarif généraliste, jour ouvré
+
+        self.assertContains(response, "5000")
+        self.assertContains(response, "FCFA")
