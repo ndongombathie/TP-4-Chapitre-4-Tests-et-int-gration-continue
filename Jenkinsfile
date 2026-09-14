@@ -32,7 +32,7 @@ pipeline {
 
         stage('Installation des dépendances') {
             steps {
-                runCmd 'python -m pip install --upgrade pip'
+                runCmd 'python3 -m pip install --upgrade pip'
                 runCmd 'pip install -r requirements-dev.txt'
             }
         }
@@ -43,8 +43,8 @@ pipeline {
             // loin : configuration Django cohérente, fichiers statiques
             // collectables sans erreur.
             steps {
-                runCmd 'python manage.py check'
-                runCmd 'python manage.py collectstatic --noinput --dry-run'
+                runCmd 'python3 manage.py check'
+                runCmd 'python3 manage.py collectstatic --noinput --dry-run'
             }
         }
 
@@ -62,7 +62,7 @@ pipeline {
             // exécutés ici par le même appel : manage.py les découvre
             // automatiquement.
             steps {
-                runCmd 'python manage.py test'
+                runCmd 'python3 manage.py test'
             }
         }
 
