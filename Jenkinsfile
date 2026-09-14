@@ -21,7 +21,9 @@ def runCmd(String commande) {
 }
 
 pipeline {
-    agent any
+    agent {
+        docker { image 'python:3.11-slim' }
+    }
 
     stages {
         stage('Récupération du code') {
@@ -32,11 +34,8 @@ pipeline {
 
         stage('Installation des dépendances') {
             steps {
-                runCmd '''
-                        python3 -m venv env
-                        . env/bin/activate
-                        pip install -r requirements-dev.txt
-                    '''
+                runCmd 'python -m pip install --upgrade pip'
+                runCmd 'pip install -r requirements-dev.txt'
             }
         }
 
@@ -46,8 +45,8 @@ pipeline {
             // loin : configuration Django cohérente, fichiers statiques
             // collectables sans erreur.
             steps {
-                runCmd 'python3 manage.py check'
-                runCmd 'python3 manage.py collectstatic --noinput --dry-run'
+                runCmd 'python manage.py check'
+                runCmd 'python manage.py collectstatic --noinput --dry-run'
             }
         }
 
@@ -65,7 +64,7 @@ pipeline {
             // exécutés ici par le même appel : manage.py les découvre
             // automatiquement.
             steps {
-                runCmd 'python3 manage.py test'
+                runCmd 'python manage.py test'
             }
         }
 
