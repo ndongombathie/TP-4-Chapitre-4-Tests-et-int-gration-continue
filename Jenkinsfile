@@ -32,9 +32,11 @@ pipeline {
 
         stage('Installation des dépendances') {
             steps {
-                runCmd 'python3 -m venv env'
-                runCmd 'source env/bin/activate'
-                runCmd 'pip install -r requirements-dev.txt'
+                runCmd '''
+                        python3 -m venv env
+                        . env/bin/activate
+                        pip install -r requirements-dev.txt
+                    '''
             }
         }
 
