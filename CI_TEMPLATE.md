@@ -65,7 +65,34 @@ Qu'est-ce qui manquerait pour passer au périmètre suivant ?
 
 **Périmètre couvert :**
 
+Le `Jenkinsfile` couvre **CI + une partie du Continuous Delivery (la
+qualité)**, mais pas la release. On retrouve :
+- **CI** : code source (`Récupération du code`, checkout scm) + build
+  (`Build` : `manage.py check` et `collectstatic --dry-run`) + tests
+  (`Tests` : `manage.py test`).
+- **Qualité (étape en plus de la CI)** : `Standard de code (lint)`
+  (flake8) et les deux stages sécurité `Sécurité - SAST` (semgrep) et
+  `Sécurité - SCA` (pip-audit).
+- En revanche, **aucune étape de release** (de production) n'existe : le
+  pipeline s'arrête après la validation, il ne fabrique ni ne publie
+  d'artefact livrable.
+
 **Ce qui manquerait pour aller plus loin :**
+
+Pour atteindre le **Continuous Delivery complet**, il faudrait ajouter un
+stage de **release manuelle** : un stage `Release` avec la directive
+`input` (validation humaine dans Jenkins, « approuver ? ») qui construise
+un artefact réutilisable (wheel/sdist Python via `python -m build`, ou une
+image Docker poussée vers le registry) puis le publie (ex. `__release__` /
+GitHub release, PyPI privé…).
+
+Pour atteindre le **déploiement continu**, la validation « input » est
+remplacée par le même stage de release **automatisé**, suivi d'un stage de
+**déploiement** (`Deploy`) qui publie vers l'environnement de production
+(serveur, PaaS, Kubernetes…) avec, si besoin, une vérification post-
+déploiement (sonde/healthcheck). Tout devient automatique : commit →
+tests → qualité → build → déploiement en production sans intervention
+humaine.
 
 ## 5. Tests non fonctionnels hors scope
 
@@ -73,3 +100,28 @@ Le chapitre 4 liste aussi les tests capacitaires et de compatibilité,
 absents de ce pipeline. Pourquoi, à l'échelle de ce TP, est-ce un choix
 raisonnable plutôt qu'un oubli (indice : YAGNI, chapitre 2) ? Que
 faudrait-il ajouter si SunuSanté grandissait réellement ?
+
+C'est un choix raisonnable car c'est un TP : l'application balance des
+fichiers entre deux dossiers sur une machine de développement. Aucune
+**contrainte de charge** (nombre d'utilisateurs, volume de fichiers) ni de
+**matrice de compatibilité** (OS/navigateurs) n'est exigée par le sujet.
+Ces tests coûteraient du temps de configuration et de maintenance (serveurs
+de charge, parcs de navigateurs) pour zéro exigence derrière — c'est
+exactement le **YAGNI** vu au chapitre 2 : on n'ajoute pas une capacité dont
+on n'a pas prouvé le besoin. Les exclure n'est pas un oubli mais un
+périmètre assumé.
+
+Si SunuSanté grandissait réellement, on ajouterait :
+- **Tests capacitaires (charge/performance)** : par ex. **JMeter** ou
+  **Locust** pour simuler des utilisateurs/fichiers concurrents, avec des
+  seuils de débit et de temps de réponse à vérifier dans le pipeline (un
+  stage `Tests de charge` qui échoue au-delà du seuil).
+- **Tests de compatibilité** : **Matrix/multi-versions** (tester sous
+  plusieurs versions Python/OS — déjà facilité par l'agent Docker), et pour
+  une appli web, **Selenium** ou **Playwright** sur plusieurs navigateurs.
+- Typiquement, **les tests non fonctionnels passent plus tard dans le
+  cycle** (après les tests fonctionnels, voire au moment de la release),
+  car ils sont plus lents et plus coûteux à exécuter.
+- Une fois ces exigences réellement apparues (gros volume, support multi-
+  plateforme), le YAGNI céderait la place à un besoin prouvé, et ces stages
+  s'intégreraient naturellement au pipeline.
