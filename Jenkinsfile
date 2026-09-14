@@ -21,7 +21,9 @@ def runCmd(String commande) {
 }
 
 pipeline {
-    agent any
+    agent {
+        docker { image 'python:3.11-slim' }
+    }
 
     stages {
         stage('Récupération du code') {
