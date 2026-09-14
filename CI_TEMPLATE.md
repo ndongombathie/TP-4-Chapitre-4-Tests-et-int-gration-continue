@@ -125,3 +125,6 @@ Si SunuSanté grandissait réellement, on ajouterait :
 - Une fois ces exigences réellement apparues (gros volume, support multi-
   plateforme), le YAGNI céderait la place à un besoin prouvé, et ces stages
   s'intégreraient naturellement au pipeline.
+
+
+### Lien depot git : https://github.com/ndongombathie/TP-4-Chapitre-4-Tests-et-int-gration-continue
