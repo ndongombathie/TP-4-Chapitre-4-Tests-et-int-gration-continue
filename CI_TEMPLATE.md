@@ -10,7 +10,7 @@ apparaît dans votre `Jenkinsfile` et dans la Stage View de Jenkins.
 
 | Étape du cours | Stage Jenkins correspondant |
 |---|---|
-| 1. Commit & push | |
+| 1. Commit & push |  |
 | 2. Notification (Jenkins est prévenu) | |
 | 3. Build | |
 | 4. Feedback build | |
